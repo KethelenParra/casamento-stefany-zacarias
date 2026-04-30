@@ -68,7 +68,7 @@ const PosterThumb = ({ videoId, onFallback }) => {
 };
 
 /** Vídeo em `public/` sem UI nativa: um toque = play/pause; só aparece ícone de play quando está pausado. */
-const MomentLocalVideoBlock = ({ title, subtitle, orientation, fileUrl, posterUrl }) => {
+const MomentLocalVideoBlock = ({ videoKey, title, subtitle, orientation, fileUrl, posterUrl, isActive, onRequestPlay }) => {
   const videoRef = useRef(null);
   const [paused, setPaused] = useState(true);
   const isPortrait = orientation === 'portrait';
@@ -77,18 +77,33 @@ const MomentLocalVideoBlock = ({ title, subtitle, orientation, fileUrl, posterUr
     const v = videoRef.current;
     if (!v) return;
     const sync = () => setPaused(v.paused);
+    const handlePlay = () => {
+      sync();
+      onRequestPlay(videoKey);
+    };
     v.addEventListener('play', sync);
+    v.addEventListener('play', handlePlay);
     v.addEventListener('pause', sync);
     return () => {
       v.removeEventListener('play', sync);
+      v.removeEventListener('play', handlePlay);
       v.removeEventListener('pause', sync);
     };
-  }, []);
+  }, [onRequestPlay, videoKey]);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (!isActive && !v.paused) v.pause();
+  }, [isActive]);
 
   const toggle = () => {
     const v = videoRef.current;
     if (!v) return;
-    if (v.paused) void v.play();
+    if (v.paused) {
+      onRequestPlay(videoKey);
+      void v.play();
+    }
     else v.pause();
   };
 
@@ -134,9 +149,8 @@ const MomentLocalVideoBlock = ({ title, subtitle, orientation, fileUrl, posterUr
   );
 };
 
-const MomentYoutubeBlock = ({ title, subtitle, orientation, embedUrl }) => {
+const MomentYoutubeBlock = ({ videoKey, title, subtitle, orientation, embedUrl, isActive, onRequestPlay }) => {
   const videoId = youtubeVideoId(embedUrl);
-  const [playing, setPlaying] = useState(false);
   const [posterFailed, setPosterFailed] = useState(false);
 
   const isPortrait = orientation === 'portrait';
@@ -158,7 +172,7 @@ const MomentYoutubeBlock = ({ title, subtitle, orientation, embedUrl }) => {
         <p className="mt-2 text-xs text-stone-500">Não conseguimos ler este link do YouTube. Usa o link normal do vídeo ou o ID.</p>
       </div>
     );
-  } else if (playing) {
+  } else if (isActive) {
     inner = (
       <iframe
         title={title}
@@ -179,7 +193,7 @@ const MomentYoutubeBlock = ({ title, subtitle, orientation, embedUrl }) => {
         <div className="absolute inset-0 bg-[#721C24]/25" aria-hidden />
         <button
           type="button"
-          onClick={() => setPlaying(true)}
+          onClick={() => onRequestPlay(videoKey)}
           className="absolute inset-0 flex flex-col items-center justify-center gap-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#721C24]/50"
         >
           <span className="sr-only">Reproduzir vídeo</span>
@@ -216,8 +230,11 @@ const MomentYoutubeBlock = ({ title, subtitle, orientation, embedUrl }) => {
 const MomentVideoBlock = (props) =>
   props.fileUrl?.trim() ? <MomentLocalVideoBlock {...props} /> : <MomentYoutubeBlock {...props} />;
 
-const HomePage = () => (
-  <div className="pt-16 md:pt-20 animate-in fade-in duration-700 bg-[#FDFCFB] font-sans">
+const HomePage = () => {
+  const [activeVideoKey, setActiveVideoKey] = useState(null);
+
+  return (
+    <div className="pt-16 md:pt-20 animate-in fade-in duration-700 bg-[#FDFCFB] font-sans">
     <section className="relative h-[55vh] md:h-[60vh] flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 bg-[#721C24]/30 z-10" />
       <img src="testagrudada.jpeg" className="absolute inset-0 w-full h-full object-cover" alt="Zacarias e Stefany" />
@@ -278,11 +295,27 @@ const HomePage = () => (
         <div className="space-y-8 md:space-y-14">
           <h3 className="text-[14px] font-bold text-[#721C24] uppercase tracking-[0.4em] text-center mb-3 md:mb-10 font-sans">O Nosso Caminho Juntos</h3>
           <div className="space-y-12 md:space-y-16">
-            {HOME_MOMENT_VIDEOS[0] && <MomentVideoBlock {...HOME_MOMENT_VIDEOS[0]} />}
+            {HOME_MOMENT_VIDEOS[0] && (
+              <MomentVideoBlock
+                {...HOME_MOMENT_VIDEOS[0]}
+                videoKey={HOME_MOMENT_VIDEOS[0].id ?? `moment-0`}
+                isActive={activeVideoKey === (HOME_MOMENT_VIDEOS[0].id ?? 'moment-0')}
+                onRequestPlay={setActiveVideoKey}
+              />
+            )}
             <div className="grid md:grid-cols-2 gap-10 md:gap-12 max-w-5xl mx-auto items-start justify-items-center">
-              {HOME_MOMENT_VIDEOS.slice(1).map((v) => (
-                <MomentVideoBlock key={v.id} {...v} />
-              ))}
+              {HOME_MOMENT_VIDEOS.slice(1).map((v, i) => {
+                const videoKey = v.id ?? `moment-${i + 1}`;
+                return (
+                  <MomentVideoBlock
+                    key={videoKey}
+                    {...v}
+                    videoKey={videoKey}
+                    isActive={activeVideoKey === videoKey}
+                    onRequestPlay={setActiveVideoKey}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
@@ -293,7 +326,8 @@ const HomePage = () => (
         </div>
       </div>
     </section>
-  </div>
-);
+    </div>
+  );
+};
 
 export default HomePage;
