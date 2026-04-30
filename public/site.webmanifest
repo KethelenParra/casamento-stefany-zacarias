@@ -1,0 +1,16 @@
+{
+  "name": "Zacarias & Stefany",
+  "short_name": "Z & S",
+  "icons": [
+    {
+      "src": "/logo/logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#721C24",
+  "background_color": "#FDFCFB",
+  "display": "standalone",
+  "start_url": "/"
+}

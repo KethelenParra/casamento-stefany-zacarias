@@ -1,18 +1,67 @@
-export const FALLBACK_GIFTS = [
-  { id: 1, name: 'Jogo de Panelas 1', description: 'Para prepararmos nossas primeiras receitas com muito amor.', reserved: false, category: 'cozinha', image_url: null, reserved_by_name: null, reserved_by_phone: null },
-  { id: 2, name: 'Air Fryer', description: 'Para deixar nossos lanchinhos e jantares mais práticos e gostosos.', reserved: false, category: 'cozinha', image_url: null, reserved_by_name: null, reserved_by_phone: null },
-  { id: 3, name: 'Televisão', description: 'Para as nossas noites de cinema, séries favoritas e momentos de descanso.', reserved: false, category: 'sala', image_url: null, reserved_by_name: null, reserved_by_phone: null },
-  { id: 4, name: 'Sofá 2 lugares', description: 'Para deixarmos nossa sala mais aconchegante e curtirmos bons momentos juntos.', reserved: false, category: 'sala', image_url: null, reserved_by_name: null, reserved_by_phone: null },
-  { id: 5, name: 'Cama', description: 'Para termos noites de descanso, conforto e muitos sonhos bons no nosso lar.', reserved: false, category: 'quarto', image_url: null, reserved_by_name: null, reserved_by_phone: null },
-  { id: 6, name: 'Máquina de lavar', description: 'Para facilitar nossa rotina e cuidar das nossas roupas com mais praticidade.', reserved: false, category: 'lavanderia', image_url: null, reserved_by_name: null, reserved_by_phone: null },
+
+/** Depois do casamento: preencher com { id, author, relation, thumbnail, url? }. Array vazio oculta a secção em Recados. */
+export const FAMILY_VIDEOS = [];
+
+/** Fotos do carrossel (`public/carrossel/`). Ordem alfabética por nome do ficheiro. */
+export const WEDDING_ALBUM_PHOTOS = [
+  { src: '/carrossel/IMG-20260423-WA0094.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0095(1).jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0097.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0098.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0099.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0100.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0101.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0102.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0103.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0104.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0105.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0106(1).jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0107.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0108.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0109.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0110.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0111.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0112.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0113.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0114.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0115.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0116.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0117.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0118.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0119.jpg', alt: 'Memória do casal' },
+  { src: '/carrossel/IMG-20260423-WA0120.jpg', alt: 'Memória do casal' },
 ];
 
-export const FAMILY_VIDEOS = [
-  { id: 'v1', author: 'Kellen e Gilberto', relation: 'Pais da Noiva', title: 'Um brinde ao amor', thumbnail: 'https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=400' },
-  { id: 'v2', author: 'Clara e Evandro', relation: 'Padrinhos do Noivo', title: 'Boas-vindas à família', thumbnail: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&q=80&w=400' },
-];
+const YT_NOS = 'https://www.youtube.com/watch?v=6861VoFX2O4';
+const YT_PEDIDO = 'https://youtube.com/shorts/NKr_QvH28iQ?feature=share';
+const YT_MUSICA = 'https://youtube.com/shorts/rEeg31KMULU?feature=share';
 
-export const INITIAL_MESSAGES = [
-  { id: 'm1', author: 'Ana Paula', text: 'Que Deus abençoe muito esse casal lindo! Que o amor de vocês seja eterno e cheio de alegria. Muita felicidade nessa nova fase!', gift_name: 'Televisão', created_at: '2026-04-20T10:30:00' },
-  { id: 'm2', author: 'Carlos e Fernanda', text: 'Vocês são um exemplo de amor verdadeiro. Que a vida a dois seja sempre leve, feliz e repleta de momentos inesquecíveis. Amamos vocês!', gift_name: null, created_at: '2026-04-21T15:00:00' },
+export const HOME_MOMENT_VIDEOS = [
+  {
+    id: 'nos',
+    title: 'Nós',
+    subtitle: 'À mensagem',
+    orientation: 'landscape',
+    embedUrl: import.meta.env.VITE_YOUTUBE_NOS || YT_NOS,
+    fileUrl: '',
+    posterUrl: '',
+  },
+  {
+    id: 'pedido',
+    title: 'O pedido',
+    subtitle: 'Um momento inesquecível',
+    orientation: 'portrait',
+    embedUrl: import.meta.env.VITE_YOUTUBE_PEDIDO || YT_PEDIDO,
+    fileUrl: '',
+    posterUrl: '',
+  },
+  {
+    id: 'musica',
+    title: 'Uma música para ti',
+    subtitle: 'Do Zacarias para a Stefany',
+    orientation: 'portrait',
+    embedUrl: import.meta.env.VITE_YOUTUBE_MUSICA || YT_MUSICA,
+    fileUrl: '',
+    posterUrl: '',
+  },
 ];

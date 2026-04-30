@@ -11,7 +11,7 @@ const GiftModal = ({ modalType, modalStep, setModalStep, formData, setFormData, 
           value={formData.name}
           onChange={e => setFormData({ ...formData, name: e.target.value })}
           className="w-full border-b-2 border-[#721C24]/20 py-3 focus:border-[#721C24] outline-none text-xl font-serif bg-transparent text-[#721C24] placeholder-[#721C24]/20"
-          placeholder="Seu nome completo"
+          placeholder="Seu nome"
         />
         {modalType === 'gift' && (
           <div className="relative">

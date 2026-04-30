@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
 import { supabase } from './config/supabase';
-import { FAMILY_VIDEOS, INITIAL_MESSAGES } from './data/constants';
+import { FAMILY_VIDEOS } from './data/constants';
 
 import Navbar from './components/Navbar';
 import TabBar from './components/TabBar';
@@ -17,7 +17,7 @@ import Recardo from './pages/Recardo';
 export default function App() {
   const [activePage, setActivePage] = useState('home');
   const [gifts, setGifts] = useState([]);
-  const [messages, setMessages] = useState(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState('gift');
   const [selectedGift, setSelectedGift] = useState(null);

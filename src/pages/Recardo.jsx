@@ -3,6 +3,7 @@ import { Plus, Play, Clock } from 'lucide-react';
 
 const Recardo = ({ messages = [], familyVideos = [], onOpenModal }) => {
   const safeMessages = Array.isArray(messages) ? messages : [];
+  const hasVideos = Array.isArray(familyVideos) && familyVideos.length > 0;
   return (
     <div className="pt-16 md:pt-32 pb-24 px-4 max-w-6xl mx-auto animate-in fade-in duration-700 font-sans">
       <div className="flex flex-col justify-center items-center text-center mb-6 md:mb-24 gap-5 md:gap-8 pt-4 md:pt-0">
@@ -17,25 +18,27 @@ const Recardo = ({ messages = [], familyVideos = [], onOpenModal }) => {
           <Plus size={13} /> Deixar uma Mensagem
         </button>
       </div>
-      <div className="grid lg:grid-cols-3 gap-6 md:gap-12">
-        <div className="lg:col-span-1 space-y-4 md:space-y-8">
-          <h2 className="text-base md:text-lg font-serif border-b border-[#721C24]/10 pb-3 uppercase tracking-[0.2em] text-[#721C24]">Vídeos da Família</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-8">
-            {familyVideos.map(v => (
-              <div key={v.id} className="group cursor-pointer">
-                <div className="aspect-video rounded-sm overflow-hidden relative mb-4 shadow-xl border border-[#721C24]/5">
-                  <img src={v.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="Thumbnail" />
-                  <div className="absolute inset-0 bg-[#721C24]/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
-                    <Play className="text-white" size={32} fill="currentColor" />
+      <div className={hasVideos ? 'grid lg:grid-cols-3 gap-6 md:gap-12' : 'max-w-4xl mx-auto'}>
+        {hasVideos && (
+          <div className="lg:col-span-1 space-y-4 md:space-y-8">
+            <h2 className="text-base md:text-lg font-serif border-b border-[#721C24]/10 pb-3 uppercase tracking-[0.2em] text-[#721C24]">Vídeos da Família</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-8">
+              {familyVideos.map(v => (
+                <div key={v.id} className="group cursor-pointer">
+                  <div className="aspect-video rounded-sm overflow-hidden relative mb-4 shadow-xl border border-[#721C24]/5">
+                    <img src={v.thumbnail} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="Thumbnail" />
+                    <div className="absolute inset-0 bg-[#721C24]/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition duration-300">
+                      <Play className="text-white" size={32} fill="currentColor" />
+                    </div>
                   </div>
+                  <h3 className="font-serif text-lg text-[#721C24] font-bold">{v.author}</h3>
+                  <p className="text-[10px] text-stone-400 tracking-[0.2em] uppercase font-bold">{v.relation}</p>
                 </div>
-                <h3 className="font-serif text-lg text-[#721C24] font-bold">{v.author}</h3>
-                <p className="text-[10px] text-stone-400 tracking-[0.2em] uppercase font-bold">{v.relation}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-        <div className="lg:col-span-2 space-y-4 md:space-y-10">
+        )}
+        <div className={hasVideos ? 'lg:col-span-2 space-y-4 md:space-y-10' : 'space-y-4 md:space-y-10'}>
           <h2 className="text-base md:text-lg font-serif border-b border-[#721C24]/10 pb-3 uppercase tracking-[0.2em] text-[#721C24]">Mural de Mensagens</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {safeMessages.length > 0 ? safeMessages.map((m, i) => (

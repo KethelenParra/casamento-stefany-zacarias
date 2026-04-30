@@ -6,6 +6,10 @@ const Navbar = ({ activePage, setActivePage }) => (
       <span
         className="text-xl md:text-2xl font-serif tracking-widest text-[#721C24] uppercase cursor-pointer"
         onClick={() => setActivePage('home')}
+        onKeyDown={(e) => e.key === 'Enter' && setActivePage('home')}
+        role="button"
+        tabIndex={0}
+        aria-label="Ir ao início"
       >
         Z & S
       </span>

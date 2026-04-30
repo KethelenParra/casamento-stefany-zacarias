@@ -67,8 +67,17 @@ const ListaPresente = ({ gifts = [], onSelectGift, onDeleteGift, onExchange }) =
   const safeGifts = Array.isArray(gifts) ? gifts : [];
   const [filtroAtivo, setFiltroAtivo] = useState('Todos');
 
-  const categorias = ['Todos', ...Array.from(new Set(safeGifts.map(g => g.category).filter(Boolean)))];
-  const giftsExibidos = filtroAtivo === 'Todos' ? safeGifts : safeGifts.filter(g => g.category === filtroAtivo);
+  const categorias = [
+    'Todos',
+    'Já escolhidos',
+    ...Array.from(new Set(safeGifts.map((g) => g.category).filter(Boolean))),
+  ];
+
+  const giftsExibidos = (() => {
+    if (filtroAtivo === 'Todos') return safeGifts;
+    if (filtroAtivo === 'Já escolhidos') return safeGifts.filter((g) => g.reserved);
+    return safeGifts.filter((g) => g.category === filtroAtivo);
+  })();
 
   return (
     <div className="pt-16 md:pt-32 pb-24 px-4 max-w-6xl mx-auto bg-[#FDFCFB] font-sans">
@@ -101,9 +110,15 @@ const ListaPresente = ({ gifts = [], onSelectGift, onDeleteGift, onExchange }) =
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-6">
-        {giftsExibidos.map((gift, i) => (
-          <GiftCard key={gift.id} gift={gift} onSelectGift={onSelectGift} index={i} />
-        ))}
+        {giftsExibidos.length === 0 ? (
+          <p className="col-span-full text-center text-stone-400 text-sm py-12 italic">
+            Nenhum presente neste filtro.
+          </p>
+        ) : (
+          giftsExibidos.map((gift, i) => (
+            <GiftCard key={gift.id} gift={gift} onSelectGift={onSelectGift} index={i} />
+          ))
+        )}
       </div>
     </div>
   );

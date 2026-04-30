@@ -1,5 +1,220 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Play, Quote } from 'lucide-react';
+import { HOME_MOMENT_VIDEOS, WEDDING_ALBUM_PHOTOS } from '../data/constants';
+import WeddingPhotoCarousel from '../components/WeddingPhotoCarousel';
+
+/** Extrai o ID do vídeo a partir de vários formatos de URL do YouTube. */
+const youtubeVideoId = (url) => {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (!trimmed) return '';
+  let embed = trimmed;
+  if (!trimmed.includes('youtube.com/embed/')) {
+    const be = trimmed.match(/youtu\.be\/([^/?]+)/);
+    if (be) embed = `https://www.youtube.com/embed/${be[1]}`;
+    else {
+      const watch = trimmed.match(/[?&]v=([^&]+)/);
+      if (watch) embed = `https://www.youtube.com/embed/${watch[1]}`;
+      else {
+        const shorts = trimmed.match(/youtube\.com\/shorts\/([^/?]+)/);
+        if (shorts) embed = `https://www.youtube.com/embed/${shorts[1]}`;
+        else if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) embed = `https://www.youtube.com/embed/${trimmed}`;
+        else return '';
+      }
+    }
+  }
+  try {
+    const path = new URL(embed).pathname;
+    const m = path.match(/\/embed\/([^/]+)/);
+    return m ? decodeURIComponent(m[1]) : '';
+  } catch {
+    return '';
+  }
+};
+
+/**
+ * URL do iframe. controls=0 esconde parte dos controlos (Shorts ainda pode mostrar logo/barra).
+ * Não é possível remover por completo a UI do YouTube dentro do iframe.
+ */
+const youtubeIframeSrc = (videoId, autoplay) => {
+  const u = new URL(`https://www.youtube-nocookie.com/embed/${videoId}`);
+  u.searchParams.set('rel', '0');
+  u.searchParams.set('modestbranding', '1');
+  u.searchParams.set('playsinline', '1');
+  u.searchParams.set('controls', '0');
+  if (autoplay) u.searchParams.set('autoplay', '1');
+  return u.toString();
+};
+
+const PosterThumb = ({ videoId, onFallback }) => {
+  const base = `https://i.ytimg.com/vi/${videoId}`;
+  const [src, setSrc] = useState(`${base}/maxresdefault.jpg`);
+
+  return (
+    <img
+      src={src}
+      alt=""
+      className="absolute inset-0 h-full w-full object-cover"
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      onError={() => {
+        if (src.includes('maxres')) setSrc(`${base}/hqdefault.jpg`);
+        else if (src.includes('hqdefault')) setSrc(`${base}/mqdefault.jpg`);
+        else onFallback?.();
+      }}
+    />
+  );
+};
+
+/** Vídeo em `public/` sem UI nativa: um toque = play/pause; só aparece ícone de play quando está pausado. */
+const MomentLocalVideoBlock = ({ title, subtitle, orientation, fileUrl, posterUrl }) => {
+  const videoRef = useRef(null);
+  const [paused, setPaused] = useState(true);
+  const isPortrait = orientation === 'portrait';
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const sync = () => setPaused(v.paused);
+    v.addEventListener('play', sync);
+    v.addEventListener('pause', sync);
+    return () => {
+      v.removeEventListener('play', sync);
+      v.removeEventListener('pause', sync);
+    };
+  }, []);
+
+  const toggle = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    if (v.paused) void v.play();
+    else v.pause();
+  };
+
+  return (
+    <div className="space-y-3 text-center">
+      <div>
+        <h4 className="font-serif text-xl md:text-2xl text-[#721C24]">{title}</h4>
+        {subtitle && <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-stone-500 font-bold mt-1">{subtitle}</p>}
+      </div>
+      <div
+        className={[
+          'relative mx-auto overflow-hidden rounded-sm shadow-2xl bg-black cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-[#721C24] focus-visible:ring-offset-2',
+          isPortrait ? 'aspect-[9/16] w-full max-w-[min(100%,340px)]' : 'aspect-video w-full max-w-4xl',
+        ].join(' ')}
+        onClick={toggle}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            toggle();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={paused ? 'Reproduzir vídeo' : 'Pausar vídeo'}
+      >
+        <video
+          ref={videoRef}
+          src={fileUrl}
+          poster={posterUrl?.trim() ? posterUrl.trim() : undefined}
+          className="absolute inset-0 h-full w-full object-cover"
+          playsInline
+          preload="metadata"
+        />
+        {paused && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-black/25 pointer-events-none">
+            <span className="flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full border border-white/40 bg-white/15 backdrop-blur-md">
+              <Play className="ml-1 text-white fill-white" size={36} />
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const MomentYoutubeBlock = ({ title, subtitle, orientation, embedUrl }) => {
+  const videoId = youtubeVideoId(embedUrl);
+  const [playing, setPlaying] = useState(false);
+  const [posterFailed, setPosterFailed] = useState(false);
+
+  const isPortrait = orientation === 'portrait';
+
+  let inner = null;
+  if (!embedUrl?.trim()) {
+    inner = (
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#721C24]/[0.07] p-6 text-center">
+        <p className="font-serif text-lg text-[#721C24]">{title}</p>
+        <p className="mt-2 text-xs text-stone-500 leading-relaxed max-w-xs">
+          Este vídeo será adicionado aqui em breve.
+        </p>
+      </div>
+    );
+  } else if (!videoId) {
+    inner = (
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-stone-100 p-6 text-center">
+        <p className="font-serif text-[#721C24]">{title}</p>
+        <p className="mt-2 text-xs text-stone-500">Não conseguimos ler este link do YouTube. Usa o link normal do vídeo ou o ID.</p>
+      </div>
+    );
+  } else if (playing) {
+    inner = (
+      <iframe
+        title={title}
+        src={youtubeIframeSrc(videoId, true)}
+        className="absolute inset-0 h-full w-full border-0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    );
+  } else {
+    inner = (
+      <>
+        {!posterFailed ? (
+          <PosterThumb videoId={videoId} onFallback={() => setPosterFailed(true)} />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-[#721C24]/40 to-stone-900/80" aria-hidden />
+        )}
+        <div className="absolute inset-0 bg-[#721C24]/25" aria-hidden />
+        <button
+          type="button"
+          onClick={() => setPlaying(true)}
+          className="absolute inset-0 flex flex-col items-center justify-center gap-4 group focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[#721C24]/50"
+        >
+          <span className="sr-only">Reproduzir vídeo</span>
+          <span className="flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-full border border-white/40 bg-white/15 backdrop-blur-md transition group-hover:bg-white/25 group-hover:scale-105">
+            <Play className="ml-1 text-white fill-white" size={36} />
+          </span>
+          <span className="px-4 text-center font-serif text-lg md:text-xl tracking-[0.15em] uppercase text-white drop-shadow-md">
+            Ver vídeo
+          </span>
+        </button>
+      </>
+    );
+  }
+
+  return (
+    <div className="space-y-3 text-center">
+      <div>
+        <h4 className="font-serif text-xl md:text-2xl text-[#721C24]">{title}</h4>
+        {subtitle && <p className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-stone-500 font-bold mt-1">{subtitle}</p>}
+      </div>
+      <div
+        className={[
+          'relative mx-auto overflow-hidden rounded-sm shadow-2xl bg-black',
+          isPortrait ? 'aspect-[9/16] w-full max-w-[min(100%,340px)]' : 'aspect-video w-full max-w-4xl',
+        ].join(' ')}
+      >
+        {inner}
+      </div>
+    </div>
+  );
+};
+
+/** Se `fileUrl` estiver preenchido (MP4 em `public/`), usa leitor limpo; senão YouTube. */
+const MomentVideoBlock = (props) =>
+  props.fileUrl?.trim() ? <MomentLocalVideoBlock {...props} /> : <MomentYoutubeBlock {...props} />;
 
 const HomePage = () => (
   <div className="pt-16 md:pt-20 animate-in fade-in duration-700 bg-[#FDFCFB] font-sans">
@@ -24,7 +239,7 @@ const HomePage = () => (
             <p>Tudo começou com um olhar e uma certeza: a de que tínhamos encontrado um no outro o que o mundo raramente oferece. Entre sorrisos partilhados e sonhos construídos, cada passo levou-nos a este momento.</p>
             <div className="pt-2 md:pt-6">
               <Quote className="text-[#721C24]/10 mb-2 md:mb-4" size={36} />
-              <p className="font-serif italic text-lg md:text-3xl text-[#721C24]">"O amor não consiste em olhar um para o outro, mas em olhar juntos na mesma direção."</p>
+              <p className="font-serif italic text-lg md:text-3xl text-[#721C24]">"Assim, eles já não são dois, mas sim uma só carne. Portanto, o que Deus uniu, ninguém separa.". Mateus 19: 6"</p>
             </div>
           </div>
         </div>
@@ -44,34 +259,21 @@ const HomePage = () => (
           <div className="w-16 h-[1px] bg-[#721C24]/20 mx-auto" />
         </div>
 
-        <div className="space-y-3 md:space-y-6">
-          <h3 className="text-[14px] font-bold text-[#721C24] uppercase tracking-[0.4em] text-center mb-3 md:mb-8 font-sans">O Nosso Caminho Juntos</h3>
-          <div className="group relative aspect-video bg-[#721C24] rounded-sm overflow-hidden shadow-2xl">
-            <img src="sorrindo.jpeg" className="w-full h-full object-cover opacity-60" alt="Nós" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center cursor-pointer hover:bg-white/20 transition duration-300">
-                <Play size={40} className="text-white fill-white ml-2" />
-              </div>
-              <p className="mt-6 text-white font-serif text-2xl tracking-[0.2em] uppercase">Nós</p>
+        <div className="space-y-8 md:space-y-14">
+          <h3 className="text-[14px] font-bold text-[#721C24] uppercase tracking-[0.4em] text-center mb-3 md:mb-10 font-sans">O Nosso Caminho Juntos</h3>
+          <div className="space-y-12 md:space-y-16">
+            {HOME_MOMENT_VIDEOS[0] && <MomentVideoBlock {...HOME_MOMENT_VIDEOS[0]} />}
+            <div className="grid md:grid-cols-2 gap-10 md:gap-12 max-w-5xl mx-auto items-start justify-items-center">
+              {HOME_MOMENT_VIDEOS.slice(1).map((v) => (
+                <MomentVideoBlock key={v.id} {...v} />
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-4 md:gap-10">
-          <div className="space-y-4">
-            <h3 className="text-[9px] font-bold text-stone-400 uppercase tracking-[0.4em] text-center font-sans"> Do Noivo para Noiva</h3>
-            <div className="group relative aspect-video bg-[#721C24] rounded-sm overflow-hidden shadow-xl">
-              <img src="sorrindo.jpeg" className="w-full h-full object-cover opacity-60" alt="De Zacarias" />
-              <div className="absolute inset-0 flex items-center justify-center cursor-pointer"><Play size={32} className="text-white fill-white opacity-80" /></div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h3 className="text-[9px] font-bold text-stone-400 uppercase tracking-[0.4em] text-center font-sans">Da Noiva para Noivo</h3>
-            <div className="group relative aspect-video bg-[#721C24] rounded-sm overflow-hidden shadow-xl">
-              <img src="sorrindo.jpeg" className="w-full h-full object-cover opacity-60" alt="De Stefany" />
-              <div className="absolute inset-0 flex items-center justify-center cursor-pointer"><Play size={32} className="text-white fill-white opacity-80" /></div>
-            </div>
-          </div>
+        <div className="space-y-6 md:space-y-10 pt-4 md:pt-8">
+          <h3 className="text-[14px] font-bold text-[#721C24] uppercase tracking-[0.4em] text-center font-sans">Memórias em fotos</h3>
+          <WeddingPhotoCarousel photos={WEDDING_ALBUM_PHOTOS} />
         </div>
       </div>
     </section>
