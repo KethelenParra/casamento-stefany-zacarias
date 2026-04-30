@@ -36,6 +36,10 @@ export default function App() {
     fetchMessages();
   }, []);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }, [activePage]);
+
   const fetchGifts = async () => {
     try {
       const { data, error } = await supabase.from('gifts').select('*').order('id', { ascending: true });
