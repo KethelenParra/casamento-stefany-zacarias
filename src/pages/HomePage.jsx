@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Play, Quote } from 'lucide-react';
+import { Play } from 'lucide-react';
 import { HOME_MOMENT_VIDEOS, WEDDING_ALBUM_PHOTOS } from '../data/constants';
 import WeddingPhotoCarousel from '../components/WeddingPhotoCarousel';
 
@@ -236,11 +236,27 @@ const HomePage = () => (
             <h2 className="text-3xl md:text-6xl font-serif text-[#721C24] leading-tight">Nossa História</h2>
           </div>
           <div className="space-y-3 md:space-y-6 text-stone-600 leading-relaxed text-base md:text-lg font-light font-sans">
-            <p>Tudo começou com um olhar e uma certeza: a de que tínhamos encontrado um no outro o que o mundo raramente oferece. Entre sorrisos partilhados e sonhos construídos, cada passo levou-nos a este momento.</p>
-            <div className="pt-2 md:pt-6">
-              <Quote className="text-[#721C24]/10 mb-2 md:mb-4" size={36} />
-              <p className="font-serif italic text-lg md:text-3xl text-[#721C24]">"Assim, eles já não são dois, mas sim uma só carne. Portanto, o que Deus uniu, ninguém separa.". Mateus 19: 6"</p>
-            </div>
+            <p>
+              Tudo começou com um simples olhar. Um amor que nasceu em cima do altar: dois jovens cheios do Espírito Santo se encontraram e logo se apaixonaram.
+            </p>
+            <p>
+              Nossa história de amor começou há exatos 14 meses — um propósito que, no início, parecia impossível. Muitas adversidades surgiram, mas o Senhor tinha um plano para nós, Stefany e Zacarias: idades diferentes, personalidades diferentes, mas os dois tinham algo em comum — uma missão, um propósito. Uma frase que já ouvimos muito é: que Deus une propósitos.
+            </p>
+            <p>
+              Passamos por guerras e preconceitos; profecias da carne vieram para tentar nos separar, mas o nosso amor só cresceu a cada dia — um amor que nasceu de uma amizade linda e sincera e de um enorme desejo de fazer a vontade de Deus. A Palavra de Deus diz, em 1 Coríntios 13:4–7:
+            </p>
+            <blockquote className="border-l-4 border-[#721C24]/25 pl-4 md:pl-6 my-4 md:my-6 font-serif italic text-[#721C24]/95 text-base md:text-lg">
+              &ldquo;O amor é paciente, o amor é bondoso. Não inveja, não se vangloria, não se orgulha. Não maltrata, não procura seus interesses, não se ira facilmente, não guarda rancor. O amor não se alegra com a injustiça, mas se alegra com a verdade. Tudo sofre, tudo crê, tudo espera, tudo suporta.&rdquo;
+            </blockquote>
+            <p>
+              Hoje, depois de tudo o que passamos, estamos contemplando a bondade de Deus e a sua fidelidade. Olhando para trás, somos gratos por tudo o que vivemos, pois valeu a pena: cada oração, cada jejum que fizemos um pelo outro. Hoje o Senhor tem-nos honrado grandemente.
+            </p>
+            <p>
+              Daqui a poucos dias diremos sim um ao outro no altar do Senhor. Estamos prontos para viver tudo aquilo que o Senhor já preparou para nós — porque &ldquo;dele, e por ele, e para ele são todas as coisas; glória a ele eternamente. Amém&rdquo; (Romanos 11:36).
+            </p>
+            <p className="pt-1">
+              Amamos-Te, Senhor. Obrigado por nos escolher para viver esse lindo propósito. ❤️
+            </p>
           </div>
         </div>
         <div className="relative p-1 border border-[#721C24]/10">
