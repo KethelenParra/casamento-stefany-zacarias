@@ -45,7 +45,9 @@ const GiftCard = ({ gift, onSelectGift, index }) => {
         <div>
           <p className="text-[7px] md:text-[8px] uppercase tracking-[0.3em] text-stone-400 mb-0.5 font-bold">{gift.category}</p>
           <h3 className={`text-sm md:text-lg font-serif leading-tight ${gift.reserved ? 'text-stone-400' : 'text-[#721C24]'}`}>{gift.name}</h3>
-          <p className="text-stone-400 text-[9px] md:text-xs leading-relaxed mt-1 line-clamp-2 font-light">{gift.description}</p>
+          <p className="text-stone-400 text-[9px] md:text-xs leading-relaxed mt-1 font-light max-h-14 overflow-y-auto pr-1 md:max-h-16 md:pr-0">
+            {gift.description}
+          </p>
         </div>
         <button
           onClick={() => !gift.reserved && onSelectGift(gift)}

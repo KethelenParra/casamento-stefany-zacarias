@@ -52,7 +52,9 @@ const Recardo = ({ messages = [], familyVideos = [], onOpenModal }) => {
                     Mimo: {m.gift_name}
                   </div>
                 )}
-                <p className="text-stone-600 leading-relaxed italic text-sm md:text-lg font-light line-clamp-6 break-words">"{m.text}"</p>
+                <p className="text-stone-600 leading-relaxed italic text-sm md:text-lg font-light break-words max-h-52 overflow-y-auto pr-1 md:pr-2">
+                  "{m.text}"
+                </p>
                 <p className="text-[9px] text-stone-300 uppercase tracking-widest font-bold">
                   {m.created_at ? new Date(m.created_at).toLocaleDateString('pt-BR') : 'Agora'}
                 </p>
