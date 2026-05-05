@@ -27,8 +27,8 @@ function crc16(str) {
  * @returns {string} payload PIX pronto para QR Code
  */
 export function generatePixPayload(amount) {
-  const pixKey = '63992834074';
-  const merchantName = 'Stefany e Zacarias';
+  const pixKey = '+5563992834074';
+  const merchantName = 'Stefany&Zacarias';
   const merchantCity = 'PALMAS';
 
   const formattedAmount = parseFloat(amount).toFixed(2);
