@@ -9,6 +9,8 @@ import TabBar from './components/TabBar';
 import Footer from './components/Footer';
 import GiftModal from './components/modals/GiftModal';
 import ExchangeModal from './components/modals/ExchangeModal';
+import CustomGiftModal from './components/modals/CustomGiftModal';
+import PixModal from './components/modals/PixModal';
 
 import HomePage from './pages/HomePage';
 import ListaPresente from './pages/ListaPresente';
@@ -90,50 +92,89 @@ export default function App() {
 
   const handleVerifyPhone = async () => {
     setExchangeError('');
-    const phone = exchangePhone.replace(/\D/g, '');
-    if (phone.length !== 10 && phone.length !== 11) {
+    const phoneDigits = exchangePhone.replace(/\D/g, '');
+    if (phoneDigits.length !== 10 && phoneDigits.length !== 11) {
       setExchangeError('Digite um número de telefone válido com DDD.');
       return;
     }
 
-    const found = gifts.find(g => g.reserved && g.reserved_by_phone && g.reserved_by_phone.replace(/\D/g, '') === phone);
+    const found = gifts.find(g => g.reserved && g.reserved_by_phone && g.reserved_by_phone.replace(/\D/g, '') === phoneDigits);
     if (found) {
       setExchangeCurrentGift(found);
       setExchangeNewGift(null);
       setModalStep(2);
-    } else {
-      setExchangeError('Número não encontrado. Verifique se digitou corretamente ou se já escolheu um presente.');
+      return;
+    }
+
+    try {
+      const { data: msgData } = await supabase
+        .from('messages')
+        .select('*')
+        .not('gift_name', 'is', null)
+        .order('created_at', { ascending: false });
+
+      const msgFound = msgData?.find(m => m.phone && m.phone.replace(/\D/g, '') === phoneDigits);
+
+      if (msgFound) {
+        setExchangeCurrentGift({
+          id: null,
+          name: msgFound.gift_name,
+          isCustom: true,
+          messageId: msgFound.id,
+          reserved_by_name: msgFound.author,
+          reserved_by_phone: msgFound.phone,
+        });
+        setExchangeNewGift(null);
+        setModalStep(2);
+      } else {
+        setExchangeError('Número não encontrado. Verifique se digitou corretamente ou se já escolheu um presente.');
+      }
+    } catch (e) {
+      console.error('Erro ao buscar mensagens:', e);
+      setExchangeError('Erro ao verificar o número. Tente novamente.');
     }
   };
 
-  const handleExchange = async () => {
-    if (!exchangeCurrentGift || !exchangeNewGift) return;
+  const handleExchange = async (overrideNewGift) => {
+    const newGift = overrideNewGift || exchangeNewGift;
+    if (!exchangeCurrentGift || !newGift) return;
 
     try {
-      await supabase.from('gifts').update({
-        reserved: false,
-        reserved_by_name: null,
-        reserved_by_phone: null
-      }).eq('id', exchangeCurrentGift.id);
+      const newIsCustom = !!newGift.isCustom;
 
-      await supabase.from('gifts').update({
-        reserved: true,
-        reserved_by_name: exchangeCurrentGift.reserved_by_name,
-        reserved_by_phone: exchangeCurrentGift.reserved_by_phone
-      }).eq('id', exchangeNewGift.id);
-
-      const { data: msgData, error: msgError } = await supabase.from('messages')
-        .update({ gift_name: exchangeNewGift.name })
-        .eq('author', exchangeCurrentGift.reserved_by_name)
-        .not('gift_name', 'is', null)
-        .select();
-
-      if (msgError) {
-        console.error('Erro ao atualizar mimo na mensagem:', msgError);
+      if (exchangeCurrentGift.isCustom) {
+        if (!newIsCustom) {
+          await supabase.from('gifts').update({
+            reserved: true,
+            reserved_by_name: exchangeCurrentGift.reserved_by_name,
+            reserved_by_phone: exchangeCurrentGift.reserved_by_phone,
+          }).eq('id', newGift.id);
+        }
+        await supabase.from('messages')
+          .update({ gift_name: newGift.name })
+          .eq('id', exchangeCurrentGift.messageId);
       } else {
-        console.log('Mimo atualizado nas mensagens:', msgData);
+        await supabase.from('gifts').update({
+          reserved: false,
+          reserved_by_name: null,
+          reserved_by_phone: null,
+        }).eq('id', exchangeCurrentGift.id);
+
+        if (!newIsCustom) {
+          await supabase.from('gifts').update({
+            reserved: true,
+            reserved_by_name: exchangeCurrentGift.reserved_by_name,
+            reserved_by_phone: exchangeCurrentGift.reserved_by_phone,
+          }).eq('id', newGift.id);
+        }
+
+        await supabase.from('messages')
+          .update({ gift_name: newGift.name })
+          .eq('author', exchangeCurrentGift.reserved_by_name)
+          .not('gift_name', 'is', null);
       }
 
+      if (overrideNewGift) setExchangeNewGift(overrideNewGift);
       setModalStep(4);
       fetchGifts();
       fetchMessages();
@@ -170,6 +211,54 @@ export default function App() {
     setIsModalOpen(true);
   };
 
+  const onOpenCustomModal = () => {
+    setModalType('custom');
+    setModalStep(1);
+    setIsModalOpen(true);
+  };
+
+  const onOpenPixModal = () => {
+    setModalType('pix');
+    setModalStep(1);
+    setIsModalOpen(true);
+  };
+
+  const handleSaveCustomGift = async ({ name, phone, isFromList, giftId, giftName, message }) => {
+    try {
+      if (isFromList && giftId) {
+        await supabase.from('gifts').update({
+          reserved: true,
+          reserved_by_name: name,
+          reserved_by_phone: phone,
+        }).eq('id', giftId);
+        fetchGifts();
+      }
+
+      await supabase.from('messages').insert([{
+        author: name,
+        phone,
+        text: message || (isFromList ? 'Vai presentear com item da lista' : 'Vai presentear com item personalizado'),
+        gift_name: giftName,
+      }]);
+      fetchMessages();
+    } catch (e) {
+      console.error('Erro ao salvar presente personalizado:', e);
+    }
+  };
+
+  const handleSavePixContribution = async ({ name, message, showAsPix }) => {
+    try {
+      await supabase.from('messages').insert([{
+        author: name,
+        text: message || 'Enviou um Pix ❤️',
+        gift_name: showAsPix ? 'Pix' : null,
+      }]);
+      fetchMessages();
+    } catch (e) {
+      console.error('Erro ao salvar contribuição Pix:', e);
+    }
+  };
+
   const closeModals = () => {
     setIsModalOpen(false);
     setTimeout(() => {
@@ -201,6 +290,8 @@ export default function App() {
             onSelectGift={onSelectGift}
             onDeleteGift={onDeleteGift}
             onExchange={onOpenExchangeModal}
+            onCustomGift={onOpenCustomModal}
+            onPix={onOpenPixModal}
           />
         )}
         {activePage === 'messages' && (
@@ -221,11 +312,13 @@ export default function App() {
                 {modalType === 'direct' && 'Deixar Mensagem'}
                 {modalType === 'gift' && `Presentear: ${selectedGift?.name}`}
                 {modalType === 'exchange' && 'Trocar meu Presente'}
+                {modalType === 'custom' && 'Dar outro presente'}
+                {modalType === 'pix' && 'Enviar Pix'}
               </h3>
               <button onClick={closeModals} className="text-[#721C24]/40 p-1"><X size={24} /></button>
             </div>
 
-            {modalType !== 'exchange' && (
+            {(modalType === 'gift' || modalType === 'direct') && (
               <GiftModal
                 modalType={modalType}
                 modalStep={modalStep}
@@ -254,6 +347,22 @@ export default function App() {
                 handleVerifyPhone={handleVerifyPhone}
                 handleExchange={handleExchange}
                 closeModals={closeModals}
+              />
+            )}
+
+            {modalType === 'custom' && (
+              <CustomGiftModal
+                onSave={handleSaveCustomGift}
+                closeModals={closeModals}
+                isSubmitting={isSubmitting}
+              />
+            )}
+
+            {modalType === 'pix' && (
+              <PixModal
+                onSave={handleSavePixContribution}
+                closeModals={closeModals}
+                isSubmitting={isSubmitting}
               />
             )}
           </div>

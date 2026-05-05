@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Gift, CheckCircle, RefreshCw } from 'lucide-react';
+import { Gift, CheckCircle, RefreshCw, PackagePlus, QrCode } from 'lucide-react';
 
 const GiftCard = ({ gift, onSelectGift, index }) => {
   const ref = useRef(null);
@@ -65,7 +65,7 @@ const GiftCard = ({ gift, onSelectGift, index }) => {
   );
 };
 
-const ListaPresente = ({ gifts = [], onSelectGift, onDeleteGift, onExchange }) => {
+const ListaPresente = ({ gifts = [], onSelectGift, onDeleteGift, onExchange, onCustomGift, onPix }) => {
   const safeGifts = Array.isArray(gifts) ? gifts : [];
   const [filtroAtivo, setFiltroAtivo] = useState('Todos');
 
@@ -87,12 +87,26 @@ const ListaPresente = ({ gifts = [], onSelectGift, onDeleteGift, onExchange }) =
         <h1 className="text-2xl md:text-6xl font-serif text-[#721C24] uppercase tracking-widest">Mimos para o Casal</h1>
         <div className="w-16 h-[1px] bg-[#721C24]/20 mx-auto" />
         <p className="text-stone-500 max-w-md mx-auto text-sm md:text-lg font-light italic">Selecionámos alguns itens que nos ajudarão a construir o nosso novo lar.</p>
-        <button
-          onClick={onExchange}
-          className="mt-2 inline-flex items-center gap-2 border border-[#721C24]/30 text-[#721C24] px-5 py-2 text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold hover:bg-[#721C24]/5 transition-all duration-300"
-        >
-          <RefreshCw size={12} /> Trocar meu Presente
-        </button>
+        <div className="mt-2 flex flex-col sm:flex-row flex-wrap gap-2 justify-center">
+          <button
+            onClick={onExchange}
+            className="inline-flex items-center justify-center gap-2 border border-[#721C24]/30 text-[#721C24] px-5 py-2 text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold hover:bg-[#721C24]/5 transition-all duration-300"
+          >
+            <RefreshCw size={12} /> Trocar meu Presente
+          </button>
+          <button
+            onClick={onCustomGift}
+            className="inline-flex items-center justify-center gap-2 border border-[#721C24]/30 text-[#721C24] px-5 py-2 text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold hover:bg-[#721C24]/5 transition-all duration-300"
+          >
+            <PackagePlus size={12} /> Presente fora da lista
+          </button>
+          <button
+            onClick={onPix}
+            className="inline-flex items-center justify-center gap-2 border border-[#721C24]/30 text-[#721C24] px-5 py-2 text-[9px] md:text-[10px] uppercase tracking-[0.25em] font-bold hover:bg-[#721C24]/5 transition-all duration-300"
+          >
+            <QrCode size={12} /> Enviar Pix
+          </button>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 justify-center mb-6 md:mb-10 animate-in fade-in duration-700">
