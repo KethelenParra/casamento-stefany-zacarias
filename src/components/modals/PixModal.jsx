@@ -6,8 +6,11 @@ import { generatePixPayload } from '../../utils/pix';
 const formatCurrency = (raw) => {
   const digits = raw.replace(/\D/g, '');
   if (!digits) return '';
-  const number = parseInt(digits, 10) / 100;
-  return number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const cents = parseInt(digits, 10);
+  const reais = Math.floor(cents / 100);
+  const centavos = (cents % 100).toString().padStart(2, '0');
+  const reaisFormatted = reais.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return `${reaisFormatted},${centavos}`;
 };
 
 const parseCurrency = (formatted) => {
@@ -28,7 +31,7 @@ const PixModal = ({ onSave, closeModals, isSubmitting }) => {
 
   const handleGenerate = () => {
     if (!canSubmit) return;
-    const payload = generatePixPayload(parsedAmount, name.trim());
+    const payload = generatePixPayload(parsedAmount);
     setPixPayload(payload);
     setStep(2);
   };

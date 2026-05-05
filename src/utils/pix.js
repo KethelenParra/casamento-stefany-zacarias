@@ -20,20 +20,20 @@ function crc16(str) {
 }
 
 /**
- * Gera o payload EMV PIX para a chave de telefone dos noivos.
- * @param {number|string} amount - Valor em reais (ex: 50 ou "50.00")
- * @param {string} guestName - Nome do convidado para a descrição
+ * Gera o payload EMV PIX estático para a chave de telefone dos noivos.
+ * Sub-elemento 02 (descrição) omitido — alguns bancos interpretam mal
+ * o campo e classificam o QR Code estático como dinâmico.
+ * @param {number|string} amount - Valor em reais (número)
  * @returns {string} payload PIX pronto para QR Code
  */
-export function generatePixPayload(amount, guestName = '') {
+export function generatePixPayload(amount) {
   const pixKey = '63992834074';
   const merchantName = 'Stefany e Zacarias';
-  const merchantCity = 'BRASIL';
-  const description = 'Casamento S e Z';
+  const merchantCity = 'PALMAS';
 
   const formattedAmount = parseFloat(amount).toFixed(2);
 
-  const merchantAccountInfo = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', pixKey) + tlv('02', description);
+  const merchantAccountInfo = tlv('00', 'BR.GOV.BCB.PIX') + tlv('01', pixKey);
 
   const additionalData = tlv('05', '***');
 
