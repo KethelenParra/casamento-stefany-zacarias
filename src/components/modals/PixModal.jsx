@@ -34,10 +34,34 @@ const PixModal = ({ onSave, closeModals, isSubmitting }) => {
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(pixPayload).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 3000);
-    });
+    const doFallbackCopy = () => {
+      const el = document.createElement('textarea');
+      el.value = pixPayload;
+      el.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      el.setSelectionRange(0, el.value.length);
+      try {
+        document.execCommand('copy');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      } catch (e) {
+        console.error('Erro ao copiar:', e);
+      }
+      document.body.removeChild(el);
+    };
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(pixPayload)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 3000);
+        })
+        .catch(doFallbackCopy);
+    } else {
+      doFallbackCopy();
+    }
   };
 
   const handleConcluir = async () => {
@@ -89,6 +113,20 @@ const PixModal = ({ onSave, closeModals, isSubmitting }) => {
         >
           {copied ? <><CheckCircle size={14} /> Código copiado!</> : <><Copy size={14} /> Copiar código PIX</>}
         </button>
+
+        <div className="space-y-1">
+          <p className="text-[9px] uppercase tracking-[0.2em] text-stone-400 font-bold">
+            Ou selecione e copie manualmente:
+          </p>
+          <textarea
+            readOnly
+            value={pixPayload}
+            rows={3}
+            onFocus={e => e.target.select()}
+            onClick={e => e.target.select()}
+            className="w-full text-[10px] font-mono text-stone-500 bg-stone-50 border border-stone-200 rounded p-2 resize-none select-all focus:outline-none focus:border-[#721C24]/40"
+          />
+        </div>
 
         <div className="border-t border-[#721C24]/10 pt-4 space-y-4">
           <div className="relative">
